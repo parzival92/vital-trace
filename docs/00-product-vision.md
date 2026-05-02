@@ -2,14 +2,14 @@
 
 ## Purpose
 
-People collect health reports across labs, portals, email attachments, and paper scans. The data is often trapped in PDFs and cannot be compared over time. Existing apps usually force users into a fixed health ecosystem or support only a narrow source format.
+Serious self-directed health trackers collect health reports across labs, portals, email attachments, and paper scans. The data is often trapped in PDFs and cannot be compared over time. Existing apps usually force users into a fixed health ecosystem or support only a narrow source format.
 
-This product gives users one controlled place to upload lab reports, structure the results, review the data, and visualize changes across time for themselves and their family.
+This product gives users one controlled place to upload lab reports, structure the results, review the data, and visualize changes across time for themselves first, with family profiles as a secondary expansion.
 
 ## Target Users
 
-- A primary account owner who manages personal and family health records.
-- Family members whose reports are uploaded by the owner, especially parents or elders who may not manage digital uploads themselves.
+- A serious self-directed health tracker who wants deeper signal from bloodwork.
+- Family members whose reports may later be uploaded by the owner, especially parents or elders who may not manage digital uploads themselves.
 - Future users who want score, trend, and interpretation features after the extraction pipeline is reliable.
 
 ## V1 User Promise
@@ -100,4 +100,3 @@ No single model or vendor is assumed to provide 99% accuracy alone.
 - Product boundaries are clear enough to prevent unsafe auto-interpretation.
 - Official observations are strictly separated from draft observations.
 - The system has an explicit path to measured accuracy instead of model trust.
-

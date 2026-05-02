@@ -1,6 +1,6 @@
 # VitalTrace
 
-VitalTrace is a docs-only specification for the first core milestone of a family health product: uploading clinical lab PDFs, extracting structured observations, reviewing them, and making confirmed observations available for visualization.
+VitalTrace is a docs-only specification for the first core milestone of a health product for serious self-directed health trackers: uploading clinical lab PDFs, extracting structured observations, reviewing them, and making confirmed observations available for visualization.
 
 There is intentionally no application code, no scaffold, no dependencies, and no deployment configuration in this repository yet. The goal is to define the product, API, data, accuracy, review, and audit contract before implementation starts.
 
