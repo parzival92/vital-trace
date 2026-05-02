@@ -67,9 +67,8 @@ Authentication should be boring and auditable. Do not mix production auth with p
 Recommended first implementation layout:
 
 ```text
-apps/
-  web/        React + TypeScript app
-  api/        FastAPI app
+frontend/     React + TypeScript app
+backend/      FastAPI app
 workers/
   extraction/ Python background processing
 packages/
@@ -85,7 +84,7 @@ Keep prototypes under `prototypes/`. They are not production code and should not
 
 Use:
 
-- `pnpm` for frontend package management.
+- `npm` for current frontend package management.
 - `uv` for Python dependency management.
 - Docker Compose for local PostgreSQL, Redis, API, worker, and frontend.
 - `.env.example` files for required local variables.
@@ -93,8 +92,8 @@ Use:
 
 The local developer loop should support:
 
-- Running the web app.
-- Running the API.
+- Running the frontend app.
+- Running the backend API.
 - Running a background worker.
 - Uploading a demo PDF.
 - Inspecting report status transitions.
@@ -147,10 +146,9 @@ Do not overbuild Kubernetes, service meshes, or multi-region infrastructure for 
 - API style: REST first.
 - Database: PostgreSQL.
 - Queue: Redis-backed RQ or Celery.
-- Package managers: `pnpm` and `uv`.
+- Package managers: `npm` and `uv`.
 - Local orchestration: Docker Compose.
 - UI app: React + Vite.
 - Backend app: FastAPI.
 
 These defaults are intended to remove ambiguity when implementation starts. They can be changed later only with an explicit ADR.
-

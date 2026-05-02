@@ -1,8 +1,8 @@
 # VitalTrace
 
-VitalTrace is a docs-only specification for the first core milestone of a health product for serious self-directed health trackers: uploading clinical lab PDFs, extracting structured observations, reviewing them, and making confirmed observations available for visualization.
+VitalTrace is a docs-first product repository for a health product for serious self-directed health trackers: uploading clinical lab PDFs, extracting structured observations, reviewing them, and making confirmed observations available for visualization.
 
-There is intentionally no production application code, scaffold, dependencies, or deployment configuration in this repository yet. The goal is to define the product, API, data, accuracy, review, and audit contract before implementation starts. Non-production prototypes may live under `prototypes/` to explore product flows.
+The repository now includes product docs, non-production prototypes, and an initial React frontend scaffold under `frontend/`. There is intentionally no production backend, extraction worker, or deployment configuration yet.
 
 ## Core Pipeline
 
@@ -44,7 +44,7 @@ No extracted result becomes official until a user reviews and confirms it. Visua
 - Does not replace a clinician.
 - Does not auto-confirm extracted lab data.
 - Does not calculate the future health score yet.
-- Does not include frontend/backend implementation code.
+- Does not include production backend or extraction worker implementation code.
 - Does not define production compliance certification.
 
 ## Milestone Boundary
@@ -86,6 +86,10 @@ The milestone is complete when the documentation is detailed enough for an engin
 
 - [Action Loop Mock](prototypes/action-loop-mock/README.md)
 - [Onboarding Flow Prototype](prototypes/onboarding-flow/README.md)
+
+## Applications
+
+- [Frontend](frontend/README.md)
 
 ## Architecture Decisions
 
