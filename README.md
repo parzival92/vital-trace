@@ -79,6 +79,7 @@ The milestone is complete when the documentation is detailed enough for an engin
 - [Observability and Audit Log](docs/16-observability-audit-log.md)
 - [Future Health Score](docs/17-future-health-score.md)
 - [Open Questions](docs/18-open-questions.md)
+- [Product Thesis and Wedge](docs/19-product-thesis-and-wedge.md)
 
 ## Architecture Decisions
 
