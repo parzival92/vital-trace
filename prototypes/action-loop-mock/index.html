@@ -1,0 +1,1291 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VitalTrace Action Loop Mock</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --surface: #ffffff;
+      --surface-soft: #f1f4f8;
+      --ink: #101828;
+      --muted: #667085;
+      --line: #d9e0ea;
+      --line-strong: #bdc7d5;
+      --blue: #2563eb;
+      --blue-soft: #dbeafe;
+      --green: #0f766e;
+      --green-soft: #ccfbf1;
+      --amber: #b45309;
+      --amber-soft: #fef3c7;
+      --red: #b42318;
+      --red-soft: #fee4e2;
+      --purple: #6d28d9;
+      --purple-soft: #ede9fe;
+      --shadow: 0 18px 45px rgba(16, 24, 40, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      background: #111827;
+      color: #f9fafb;
+      padding: 24px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: #f9fafb;
+      color: #111827;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .brand-title {
+      font-size: 17px;
+      font-weight: 750;
+      letter-spacing: 0;
+    }
+
+    .brand-subtitle {
+      color: #b6c0cf;
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .profile-block {
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 8px;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .profile-name {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .profile-meta {
+      color: #b6c0cf;
+      font-size: 13px;
+    }
+
+    .nav-label {
+      color: #98a2b3;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin: 0 0 8px;
+    }
+
+    .tab-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .tab-button {
+      width: 100%;
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 11px;
+      background: transparent;
+      color: #d0d5dd;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 42px;
+    }
+
+    .tab-button:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #ffffff;
+    }
+
+    .tab-button[aria-selected="true"] {
+      background: #ffffff;
+      color: #111827;
+    }
+
+    .tab-count {
+      min-width: 26px;
+      height: 22px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      padding: 0 8px;
+      color: inherit;
+      background: rgba(255, 255, 255, 0.12);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .tab-button[aria-selected="true"] .tab-count {
+      background: var(--blue-soft);
+      color: var(--blue);
+    }
+
+    .sidebar-note {
+      margin-top: auto;
+      color: #b6c0cf;
+      font-size: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      padding-top: 14px;
+    }
+
+    .content {
+      min-width: 0;
+      padding: 28px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      margin: 0 0 7px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 32px;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .lede {
+      margin: 10px 0 0;
+      color: var(--muted);
+      max-width: 780px;
+      font-size: 15px;
+    }
+
+    .report-switch {
+      min-width: 280px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .switch-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .report-dates {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .date-chip {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 9px 10px;
+      background: var(--surface-soft);
+      min-width: 0;
+    }
+
+    .date-chip strong {
+      display: block;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .date-chip span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .arrow {
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+      gap: 18px;
+      align-items: start;
+      margin-bottom: 18px;
+    }
+
+    .panel,
+    .metric-card,
+    .marker-row,
+    .focus-card,
+    .experiment-row,
+    .plan-row,
+    .proof-row {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel {
+      padding: 18px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.25;
+    }
+
+    .panel-caption {
+      color: var(--muted);
+      margin: 5px 0 0;
+      font-size: 13px;
+    }
+
+    .risk-pill,
+    .status-pill,
+    .small-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      min-height: 24px;
+      padding: 3px 9px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .risk-pill.red,
+    .status-pill.worse,
+    .small-pill.red {
+      color: var(--red);
+      background: var(--red-soft);
+    }
+
+    .risk-pill.amber,
+    .status-pill.unresolved,
+    .small-pill.amber {
+      color: var(--amber);
+      background: var(--amber-soft);
+    }
+
+    .risk-pill.green,
+    .status-pill.improved,
+    .small-pill.green {
+      color: var(--green);
+      background: var(--green-soft);
+    }
+
+    .risk-pill.blue,
+    .status-pill.stable,
+    .small-pill.blue {
+      color: var(--blue);
+      background: var(--blue-soft);
+    }
+
+    .score-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric-card {
+      padding: 14px;
+      box-shadow: none;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .metric-value {
+      margin-top: 5px;
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .metric-detail {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 5px;
+    }
+
+    .score-line {
+      height: 10px;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .score-fill {
+      display: block;
+      height: 100%;
+      width: 74%;
+      background: var(--blue);
+      border-radius: 999px;
+    }
+
+    .main-stage {
+      margin-top: 18px;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    .section-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .marker-row {
+      display: grid;
+      grid-template-columns: minmax(130px, 1fr) minmax(120px, 0.8fr) minmax(120px, 0.8fr) minmax(110px, 0.7fr) minmax(130px, 1fr);
+      gap: 12px;
+      align-items: center;
+      padding: 12px 14px;
+      box-shadow: none;
+    }
+
+    .marker-name {
+      font-weight: 750;
+    }
+
+    .marker-context {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    .cell-label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 3px;
+    }
+
+    .cell-value {
+      font-weight: 750;
+      overflow-wrap: anywhere;
+    }
+
+    .delta {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    .focus-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .focus-card {
+      padding: 14px;
+      box-shadow: none;
+      display: grid;
+      gap: 12px;
+    }
+
+    .focus-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .focus-title {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .focus-desc {
+      color: var(--muted);
+      margin: 4px 0 0;
+      font-size: 13px;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 8px;
+      background: var(--surface-soft);
+      color: #344054;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .experiment-row,
+    .plan-row,
+    .proof-row {
+      padding: 14px;
+      box-shadow: none;
+      display: grid;
+      grid-template-columns: minmax(180px, 0.8fr) minmax(0, 1.4fr) minmax(160px, 0.8fr);
+      gap: 14px;
+      align-items: center;
+    }
+
+    .row-title {
+      margin: 0;
+      font-weight: 800;
+    }
+
+    .row-text {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .progress-track {
+      height: 9px;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--green);
+      display: block;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 10px;
+    }
+
+    .timeline-step {
+      display: grid;
+      grid-template-columns: 84px minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .timeline-step:last-child {
+      border-bottom: 0;
+    }
+
+    .timeline-date {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .timeline-title {
+      margin: 0;
+      font-weight: 800;
+    }
+
+    .timeline-copy {
+      color: var(--muted);
+      margin: 3px 0 0;
+      font-size: 13px;
+    }
+
+    .proof-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .callout {
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--blue);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 14px;
+    }
+
+    .callout strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .callout p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 12px;
+      margin: 18px 0 0;
+    }
+
+    @media (max-width: 1120px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        padding: 14px;
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      .brand,
+      .profile-block,
+      .sidebar-note,
+      .nav-label {
+        display: none;
+      }
+
+      .tab-list {
+        display: flex;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+
+      .tab-button {
+        flex: 0 0 170px;
+        min-width: 170px;
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .content {
+        min-width: 0;
+        padding: 22px;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .topbar,
+      .dashboard-grid,
+      .focus-grid,
+      .proof-summary {
+        grid-template-columns: 1fr;
+        display: grid;
+      }
+
+      .topbar {
+        gap: 16px;
+      }
+
+      .report-switch {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .report-dates {
+        grid-template-columns: 1fr;
+      }
+
+      .arrow {
+        display: none;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      .score-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .marker-row,
+      .experiment-row,
+      .plan-row,
+      .proof-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .content {
+        padding: 16px;
+      }
+
+      .panel {
+        padding: 14px;
+      }
+
+      .panel-header,
+      .focus-top {
+        display: grid;
+      }
+
+      .timeline-step {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Prototype navigation">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">VT</div>
+        <div>
+          <div class="brand-title">VitalTrace</div>
+          <div class="brand-subtitle">Action loop mock</div>
+        </div>
+      </div>
+
+      <section class="profile-block" aria-label="Demo profile">
+        <div class="profile-name">Arjun Mehta</div>
+        <div class="profile-meta">Demo profile, age 34<br>Self-directed health tracker</div>
+      </section>
+
+      <nav>
+        <p class="nav-label">Workflow</p>
+        <div class="tab-list" role="tablist" aria-label="Bloodwork action loop views">
+          <button class="tab-button" role="tab" aria-selected="true" aria-controls="baseline" id="tab-baseline" data-view="baseline">Baseline Report <span class="tab-count">4</span></button>
+          <button class="tab-button" role="tab" aria-selected="false" aria-controls="focus" id="tab-focus" data-view="focus">Focus Areas <span class="tab-count">5</span></button>
+          <button class="tab-button" role="tab" aria-selected="false" aria-controls="action" id="tab-action" data-view="action">Action Phase <span class="tab-count">12w</span></button>
+          <button class="tab-button" role="tab" aria-selected="false" aria-controls="retest" id="tab-retest" data-view="retest">Retest Plan <span class="tab-count">7</span></button>
+          <button class="tab-button" role="tab" aria-selected="false" aria-controls="after" id="tab-after" data-view="after">After Report <span class="tab-count">+9</span></button>
+          <button class="tab-button" role="tab" aria-selected="false" aria-controls="proof" id="tab-proof" data-view="proof">Proof View <span class="tab-count">3</span></button>
+        </div>
+      </nav>
+
+      <div class="sidebar-note">
+        Demo only. This mock uses anonymized sample values and avoids diagnosis, prescriptions, or guaranteed outcomes.
+      </div>
+    </aside>
+
+    <main class="content">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Bloodwork Action Loop</p>
+          <h1>From red markers to a measurable next step.</h1>
+          <p class="lede">
+            VitalTrace should not just show lab history. It should help a serious tracker pick focus areas, run a lifestyle phase, retest, and see what changed.
+          </p>
+        </div>
+
+        <section class="report-switch" aria-label="Compared reports">
+          <div class="switch-label">Compared reports</div>
+          <div class="report-dates">
+            <div class="date-chip">
+              <strong>12 Jan 2026</strong>
+              <span>Baseline</span>
+            </div>
+            <div class="arrow" aria-hidden="true">-&gt;</div>
+            <div class="date-chip">
+              <strong>18 Apr 2026</strong>
+              <span>After 12 weeks</span>
+            </div>
+          </div>
+        </section>
+      </header>
+
+      <section class="dashboard-grid" aria-label="Top action loop summary">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Health score movement</h2>
+              <p class="panel-caption">A future deterministic score should explain what changed, not hide behind one number.</p>
+            </div>
+            <span class="risk-pill blue">Demo score</span>
+          </div>
+          <div class="score-strip">
+            <div class="metric-card">
+              <div class="metric-label">Baseline</div>
+              <div class="metric-value">68</div>
+              <div class="metric-detail">4 red markers, 2 amber markers</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Latest</div>
+              <div class="metric-value">77</div>
+              <div class="metric-detail">2 red markers, 2 amber markers</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Movement</div>
+              <div class="metric-value">+9</div>
+              <div class="metric-detail">Driven by glucose, inflammation, vitamin D</div>
+            </div>
+          </div>
+          <div class="score-line" aria-hidden="true"><span class="score-fill"></span></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Top open risks</h2>
+              <p class="panel-caption">The product should tell the user what still needs attention after improvement.</p>
+            </div>
+          </div>
+          <div class="section-grid" id="top-risk-list"></div>
+        </div>
+      </section>
+
+      <section class="main-stage">
+        <section class="view active" id="baseline" role="tabpanel" aria-labelledby="tab-baseline">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h2 class="panel-title">Baseline Report</h2>
+                <p class="panel-caption">Red markers become a reviewable starting point, not a vague warning.</p>
+              </div>
+              <span class="risk-pill red">4 red markers</span>
+            </div>
+            <div class="section-grid" id="baseline-list"></div>
+          </div>
+        </section>
+
+        <section class="view" id="focus" role="tabpanel" aria-labelledby="tab-focus">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h2 class="panel-title">Focus Areas</h2>
+                <p class="panel-caption">Markers are grouped into practical health domains so the user can choose a 12-week focus.</p>
+              </div>
+              <span class="risk-pill blue">No diagnosis</span>
+            </div>
+            <div class="focus-grid" id="focus-grid"></div>
+          </div>
+        </section>
+
+        <section class="view" id="action" role="tabpanel" aria-labelledby="tab-action">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h2 class="panel-title">Action Phase</h2>
+                <p class="panel-caption">The user tracks behavior changes as an experiment. VitalTrace records context, not medical orders.</p>
+              </div>
+              <span class="risk-pill green">12-week phase</span>
+            </div>
+            <div class="section-grid" id="action-list"></div>
+          </div>
+        </section>
+
+        <section class="view" id="retest" role="tabpanel" aria-labelledby="tab-retest">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h2 class="panel-title">Retest Plan</h2>
+              <p class="panel-caption">The next report is planned around the markers that can show whether values moved after the lifestyle phase.</p>
+              </div>
+              <span class="risk-pill amber">Discuss concerns</span>
+            </div>
+            <div class="timeline" id="retest-list"></div>
+          </div>
+        </section>
+
+        <section class="view" id="after" role="tabpanel" aria-labelledby="tab-after">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h2 class="panel-title">After Report</h2>
+                <p class="panel-caption">The product compares reviewed observations and separates improvement from unresolved risk.</p>
+              </div>
+              <span class="risk-pill green">5 improved</span>
+            </div>
+            <div class="section-grid" id="after-list"></div>
+          </div>
+        </section>
+
+        <section class="view" id="proof" role="tabpanel" aria-labelledby="tab-proof">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h2 class="panel-title">Proof View</h2>
+              <p class="panel-caption">The advantage is closing the loop: tracked effort, marker movement, and next focus in one place.</p>
+              </div>
+              <span class="risk-pill blue">Outcome loop</span>
+            </div>
+            <div class="proof-summary" id="proof-summary"></div>
+            <div class="section-grid" id="proof-list"></div>
+          </div>
+        </section>
+      </section>
+
+      <p class="footer-note">
+        Prototype copy is educational and non-diagnostic. It does not recommend treatment, prescribe medication, or replace clinician review.
+      </p>
+    </main>
+  </div>
+
+  <script>
+    const markers = [
+      {
+        name: "HbA1c",
+        category: "Glucose control",
+        baseline: "6.1%",
+        latest: "5.6%",
+        range: "< 5.7%",
+        status: "improved",
+        baselineRisk: "red",
+        latestRisk: "green",
+        delta: "-0.5%",
+        note: "Moved from red to in-range after the tracked phase."
+      },
+      {
+        name: "LDL-C",
+        category: "Lipids",
+        baseline: "162 mg/dL",
+        latest: "139 mg/dL",
+        range: "< 100 mg/dL",
+        status: "improved",
+        baselineRisk: "red",
+        latestRisk: "amber",
+        delta: "-23 mg/dL",
+        note: "Improved, but still above the target range shown on the report."
+      },
+      {
+        name: "hs-CRP",
+        category: "Inflammation",
+        baseline: "4.8 mg/L",
+        latest: "2.2 mg/L",
+        range: "< 1.0 mg/L",
+        status: "improved",
+        baselineRisk: "red",
+        latestRisk: "amber",
+        delta: "-2.6 mg/L",
+        note: "Lower than baseline, still worth watching with context."
+      },
+      {
+        name: "ALT",
+        category: "Liver / metabolic",
+        baseline: "61 U/L",
+        latest: "44 U/L",
+        range: "7-56 U/L",
+        status: "improved",
+        baselineRisk: "red",
+        latestRisk: "green",
+        delta: "-17 U/L",
+        note: "Returned to report range in the latest result."
+      },
+      {
+        name: "Vitamin D",
+        category: "Deficiency",
+        baseline: "18 ng/mL",
+        latest: "31 ng/mL",
+        range: "30-100 ng/mL",
+        status: "improved",
+        baselineRisk: "amber",
+        latestRisk: "green",
+        delta: "+13 ng/mL",
+        note: "Now inside the report range."
+      },
+      {
+        name: "Triglycerides",
+        category: "Lipids",
+        baseline: "188 mg/dL",
+        latest: "166 mg/dL",
+        range: "< 150 mg/dL",
+        status: "improved",
+        baselineRisk: "amber",
+        latestRisk: "amber",
+        delta: "-22 mg/dL",
+        note: "Improved but still not fully resolved."
+      },
+      {
+        name: "HDL-C",
+        category: "Lipids",
+        baseline: "39 mg/dL",
+        latest: "41 mg/dL",
+        range: "> 40 mg/dL",
+        status: "stable",
+        baselineRisk: "amber",
+        latestRisk: "green",
+        delta: "+2 mg/dL",
+        note: "Small favorable movement."
+      }
+    ];
+
+    const focusAreas = [
+      {
+        title: "Glucose control",
+        severity: "red",
+        markers: ["HbA1c"],
+        description: "Primary baseline issue. Track whether diet consistency, body weight, sleep, and training correlate with improvement."
+      },
+      {
+        title: "Lipids",
+        severity: "red",
+        markers: ["LDL-C", "Triglycerides", "HDL-C"],
+        description: "Improved but not solved. Good candidate for doctor discussion and repeat lipid panel."
+      },
+      {
+        title: "Inflammation",
+        severity: "red",
+        markers: ["hs-CRP"],
+        description: "Useful as a context marker. Interpret with sleep, illness, training load, dental issues, or clinician input."
+      },
+      {
+        title: "Liver / metabolic",
+        severity: "amber",
+        markers: ["ALT"],
+        description: "Returned into report range. Keep tracking with weight, alcohol, training, and clinician context."
+      },
+      {
+        title: "Deficiency",
+        severity: "amber",
+        markers: ["Vitamin D"],
+        description: "Moved into range. The product records the change without turning it into a dosage recommendation."
+      }
+    ];
+
+    const actions = [
+      {
+        title: "Nutrition consistency",
+        context: "Logged 70 of 84 days",
+        detail: "Reduced late-night snacking and kept protein and fiber targets visible during the phase.",
+        progress: 83,
+        tag: "User tracked"
+      },
+      {
+        title: "Training plan",
+        context: "4 sessions per week average",
+        detail: "Mixed resistance training and zone-2 cardio. No exercise prescription is implied by the product.",
+        progress: 76,
+        tag: "User tracked"
+      },
+      {
+        title: "Sleep window",
+        context: "7h 18m average",
+        detail: "Used wearable data as context for glucose and inflammation changes.",
+        progress: 72,
+        tag: "Context"
+      },
+      {
+        title: "Alcohol reduction",
+        context: "12-week self-report",
+        detail: "Logged fewer drinking days before the retest to compare with ALT and triglycerides.",
+        progress: 88,
+        tag: "Context"
+      },
+      {
+        title: "Body weight",
+        context: "-4.2 kg over 12 weeks",
+        detail: "Weight trend is stored as context, not as proof of cause.",
+        progress: 68,
+        tag: "Outcome context"
+      }
+    ];
+
+    const retestPlan = [
+      {
+        date: "Week 0",
+        title: "Confirm baseline report",
+        copy: "Review extracted values, ranges, units, and source rows before creating official observations."
+      },
+      {
+        date: "Week 1",
+        title: "Choose focus areas",
+        copy: "Pick glucose control, lipids, inflammation, and liver/metabolic context as the active experiment."
+      },
+      {
+        date: "Weeks 1-12",
+        title: "Track lifestyle context",
+        copy: "Log behavior changes that may help explain marker movement later."
+      },
+      {
+        date: "Week 10",
+        title: "Prepare retest panel",
+        copy: "Retest HbA1c, lipid profile, hs-CRP, liver enzymes, vitamin D, fasting glucose, and fasting insulin if ordered."
+      },
+      {
+        date: "Week 12",
+        title: "Doctor discussion prompts",
+        copy: "Discuss persistent LDL-C and hs-CRP elevation, especially if repeated across reports or paired with symptoms."
+      }
+    ];
+
+    const proofItems = [
+      {
+        title: "What improved",
+        label: "5 markers",
+        status: "improved",
+        text: "HbA1c, ALT, vitamin D, triglycerides, and hs-CRP moved favorably after the tracked phase."
+      },
+      {
+        title: "What stayed risky",
+        label: "2 markers",
+        status: "unresolved",
+        text: "LDL-C and hs-CRP remain outside the target ranges shown on the report and should stay visible."
+      },
+      {
+        title: "Next focus",
+        label: "Lipids",
+        status: "stable",
+        text: "The next cycle should focus on unresolved lipid risk and clinician-prep questions, not another generic dashboard view."
+      }
+    ];
+
+    function riskLabel(risk) {
+      if (risk === "red") return "Red";
+      if (risk === "amber") return "Amber";
+      return "In range";
+    }
+
+    function statusLabel(status) {
+      if (status === "improved") return "Improved";
+      if (status === "unresolved") return "Unresolved";
+      if (status === "worse") return "Worse";
+      return "Stable";
+    }
+
+    function markerRow(marker, mode) {
+      const showLatest = mode === "after";
+      const activeRisk = showLatest ? marker.latestRisk : marker.baselineRisk;
+      const activeValue = showLatest ? marker.latest : marker.baseline;
+      return `
+        <article class="marker-row">
+          <div>
+            <div class="marker-name">${marker.name}</div>
+            <div class="marker-context">${marker.category}</div>
+          </div>
+          <div>
+            <div class="cell-label">${showLatest ? "Latest" : "Baseline"}</div>
+            <div class="cell-value">${activeValue}</div>
+            <div class="delta">${showLatest ? marker.delta : "12 Jan 2026"}</div>
+          </div>
+          <div>
+            <div class="cell-label">Report range</div>
+            <div class="cell-value">${marker.range}</div>
+          </div>
+          <div>
+            <span class="risk-pill ${activeRisk}">${riskLabel(activeRisk)}</span>
+          </div>
+          <div>
+            <div class="cell-label">${showLatest ? "Outcome" : "Why it matters"}</div>
+            <div class="delta">${showLatest ? marker.note : "Candidate focus area for this phase."}</div>
+          </div>
+        </article>
+      `;
+    }
+
+    function comparisonRow(marker) {
+      return `
+        <article class="marker-row">
+          <div>
+            <div class="marker-name">${marker.name}</div>
+            <div class="marker-context">${marker.category}</div>
+          </div>
+          <div>
+            <div class="cell-label">Baseline</div>
+            <div class="cell-value">${marker.baseline}</div>
+          </div>
+          <div>
+            <div class="cell-label">Latest</div>
+            <div class="cell-value">${marker.latest}</div>
+            <div class="delta">${marker.delta}</div>
+          </div>
+          <div>
+            <span class="status-pill ${marker.status}">${statusLabel(marker.status)}</span>
+          </div>
+          <div>
+            <div class="cell-label">Interpretation boundary</div>
+            <div class="delta">${marker.note}</div>
+          </div>
+        </article>
+      `;
+    }
+
+    function render() {
+      document.getElementById("top-risk-list").innerHTML = markers
+        .filter((marker) => marker.latestRisk !== "green")
+        .slice(0, 3)
+        .map((marker) => `
+          <article class="proof-row">
+            <div>
+              <p class="row-title">${marker.name}</p>
+              <p class="row-text">${marker.category}</p>
+            </div>
+            <div>
+              <p class="row-title">${marker.latest}</p>
+              <p class="row-text">${marker.note}</p>
+            </div>
+            <span class="small-pill ${marker.latestRisk}">${riskLabel(marker.latestRisk)}</span>
+          </article>
+        `).join("");
+
+      document.getElementById("baseline-list").innerHTML = markers
+        .map((marker) => markerRow(marker, "baseline"))
+        .join("");
+
+      document.getElementById("focus-grid").innerHTML = focusAreas
+        .map((area) => `
+          <article class="focus-card">
+            <div class="focus-top">
+              <div>
+                <h3 class="focus-title">${area.title}</h3>
+                <p class="focus-desc">${area.description}</p>
+              </div>
+              <span class="risk-pill ${area.severity}">${riskLabel(area.severity)}</span>
+            </div>
+            <div class="tag-list">
+              ${area.markers.map((marker) => `<span class="tag">${marker}</span>`).join("")}
+            </div>
+          </article>
+        `).join("");
+
+      document.getElementById("action-list").innerHTML = actions
+        .map((action) => `
+          <article class="experiment-row">
+            <div>
+              <p class="row-title">${action.title}</p>
+              <p class="row-text">${action.context}</p>
+            </div>
+            <div>
+              <p class="row-text">${action.detail}</p>
+              <div class="progress-track" aria-hidden="true"><span class="progress-fill" style="width: ${action.progress}%"></span></div>
+            </div>
+            <span class="small-pill blue">${action.tag}</span>
+          </article>
+        `).join("");
+
+      document.getElementById("retest-list").innerHTML = retestPlan
+        .map((step) => `
+          <article class="timeline-step">
+            <div class="timeline-date">${step.date}</div>
+            <div>
+              <p class="timeline-title">${step.title}</p>
+              <p class="timeline-copy">${step.copy}</p>
+            </div>
+          </article>
+        `).join("");
+
+      document.getElementById("after-list").innerHTML = markers
+        .map(comparisonRow)
+        .join("");
+
+      document.getElementById("proof-summary").innerHTML = proofItems
+        .map((item) => `
+          <div class="metric-card">
+            <div class="metric-label">${item.title}</div>
+            <div class="metric-value">${item.label}</div>
+            <div class="metric-detail">${item.text}</div>
+          </div>
+        `).join("");
+
+      document.getElementById("proof-list").innerHTML = `
+        <div class="callout">
+          <strong>Product advantage</strong>
+          <p>VitalTrace turns reports into a repeatable feedback loop: identify the signal, record the user's experiment, retest, and explain marker movement without making diagnosis or treatment claims.</p>
+        </div>
+        ${proofItems.map((item) => `
+          <article class="proof-row">
+            <div>
+              <p class="row-title">${item.title}</p>
+              <p class="row-text">${item.label}</p>
+            </div>
+            <p class="row-text">${item.text}</p>
+            <span class="status-pill ${item.status}">${statusLabel(item.status)}</span>
+          </article>
+        `).join("")}
+      `;
+    }
+
+    function setActiveView(viewId) {
+      document.querySelectorAll(".tab-button").forEach((button) => {
+        const isSelected = button.dataset.view === viewId;
+        button.setAttribute("aria-selected", String(isSelected));
+      });
+
+      document.querySelectorAll(".view").forEach((view) => {
+        view.classList.toggle("active", view.id === viewId);
+      });
+    }
+
+    document.querySelectorAll(".tab-button").forEach((button) => {
+      button.addEventListener("click", () => setActiveView(button.dataset.view));
+    });
+
+    render();
+  </script>
+</body>
+</html>

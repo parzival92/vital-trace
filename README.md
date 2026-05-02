@@ -2,7 +2,7 @@
 
 VitalTrace is a docs-only specification for the first core milestone of a health product for serious self-directed health trackers: uploading clinical lab PDFs, extracting structured observations, reviewing them, and making confirmed observations available for visualization.
 
-There is intentionally no application code, no scaffold, no dependencies, and no deployment configuration in this repository yet. The goal is to define the product, API, data, accuracy, review, and audit contract before implementation starts.
+There is intentionally no production application code, scaffold, dependencies, or deployment configuration in this repository yet. The goal is to define the product, API, data, accuracy, review, and audit contract before implementation starts. Non-production prototypes may live under `prototypes/` to explore product flows.
 
 ## Core Pipeline
 
@@ -80,6 +80,12 @@ The milestone is complete when the documentation is detailed enough for an engin
 - [Future Health Score](docs/17-future-health-score.md)
 - [Open Questions](docs/18-open-questions.md)
 - [Product Thesis and Wedge](docs/19-product-thesis-and-wedge.md)
+- [Implementation Toolchain](docs/20-implementation-toolchain.md)
+
+## Prototypes
+
+- [Action Loop Mock](prototypes/action-loop-mock/README.md)
+- [Onboarding Flow Prototype](prototypes/onboarding-flow/README.md)
 
 ## Architecture Decisions
 
