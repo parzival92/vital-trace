@@ -1,17 +1,14 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
-type LoginMode = "otp" | "password";
-
 type LoginState = {
   email: string;
-  password: string;
-  otp: string;
 };
 
+type AppScreen = "landing" | "dashboard";
+type Tone = "green" | "amber" | "red" | "blue" | "neutral";
+
 const defaultLogin: LoginState = {
-  email: "demo@vitaltrace.local",
-  password: "",
-  otp: "",
+  email: "",
 };
 
 const trustStats = [
@@ -54,17 +51,143 @@ const markerRows = [
   { name: "Vitamin D", value: "18", status: "Amber" },
 ];
 
+const dashboardNav = [
+  { label: "Dashboard", token: "D", active: true },
+  { label: "Reports", token: "R" },
+  { label: "Review Center", token: "C", badge: "4" },
+  { label: "Biomarkers", token: "B" },
+  { label: "Trends", token: "T" },
+  { label: "Insights", token: "I" },
+  { label: "Family", token: "F", badge: "New" },
+  { label: "Settings", token: "S" },
+];
+
+const statusCards: Array<{ label: string; value: string; helper: string; tone: Tone }> = [
+  { label: "Clean draft", value: "61", helper: "Source-linked rows", tone: "green" },
+  { label: "Needs review", value: "4", helper: "Unit/range checks", tone: "amber" },
+  { label: "Out of lab range", value: "4", helper: "Before confirmation", tone: "red" },
+  { label: "Official changes", value: "0", helper: "Blocked until review", tone: "blue" },
+];
+
+const trendCards: Array<{
+  label: string;
+  unit: string;
+  value: string;
+  status: string;
+  tone: Tone;
+  previous: string;
+  latest: string;
+  points: string;
+}> = [
+  {
+    label: "HbA1c",
+    unit: "%",
+    value: "5.4",
+    status: "Stable optimal",
+    tone: "green",
+    previous: "5.1",
+    latest: "5.4",
+    points: "8,24 28,42 48,48 68,44 88,53 108,60",
+  },
+  {
+    label: "LDL Cholesterol",
+    unit: "mg/dL",
+    value: "116",
+    status: "Optimal",
+    tone: "green",
+    previous: "131",
+    latest: "116",
+    points: "8,20 28,34 48,41 68,44 88,51 108,54",
+  },
+  {
+    label: "Serum Creatinine",
+    unit: "mg/dL",
+    value: "0.90",
+    status: "Optimal",
+    tone: "green",
+    previous: "0.88",
+    latest: "0.90",
+    points: "8,22 28,38 48,46 68,36 88,32 108,45",
+  },
+  {
+    label: "Vitamin D",
+    unit: "ng/mL",
+    value: "22.4",
+    status: "Borderline",
+    tone: "amber",
+    previous: "18.6",
+    latest: "22.4",
+    points: "8,24 28,48 48,52 68,54 88,40 108,30",
+  },
+  {
+    label: "MCV",
+    unit: "fL",
+    value: "106.6",
+    status: "Review",
+    tone: "red",
+    previous: "96.9",
+    latest: "106.6",
+    points: "8,52 28,44 48,38 68,31 88,24 108,16",
+  },
+];
+
+const changeRows: Array<{
+  marker: string;
+  direction: "up" | "down" | "flat";
+  status: string;
+  detail: string;
+  tone: Tone;
+  range: string;
+}> = [
+  {
+    marker: "HbA1c",
+    direction: "flat",
+    status: "Stable optimal",
+    detail: "5.4% now vs 5.1% three months ago",
+    tone: "green",
+    range: "< 5.7 normal range",
+  },
+  {
+    marker: "MCV",
+    direction: "up",
+    status: "Needs evidence review",
+    detail: "106.6 fL now vs 96.9 fL three months ago",
+    tone: "red",
+    range: "Source row and unit require confirmation",
+  },
+  {
+    marker: "Triglycerides",
+    direction: "down",
+    status: "Improved",
+    detail: "112 mg/dL now vs 152 mg/dL three months ago",
+    tone: "green",
+    range: "< 150 lab target",
+  },
+];
+
+const quickActions = [
+  { title: "Upload New Report", copy: "Add a lab PDF", token: "UP" },
+  { title: "Review Center", copy: "4 fields need confirmation", token: "RC" },
+  { title: "Biomarkers", copy: "Browse canonical markers", token: "BM" },
+  { title: "Trends", copy: "Compare over time", token: "TR" },
+];
+
 const privacyNotes = [
-  "Lab PDFs are sensitive health data.",
-  "Extraction results stay draft until reviewed.",
+  "Uploaded reports stay private.",
+  "Extracted values remain draft until reviewed.",
   "VitalTrace does not diagnose or prescribe.",
 ];
 
+const onboardingSteps = [
+  "Create self profile",
+  "Upload first report",
+  "Review extracted values",
+];
+
 export function App() {
+  const [screen, setScreen] = useState<AppScreen>("landing");
   const [isSignInOpen, setIsSignInOpen] = useState(false);
-  const [mode, setMode] = useState<LoginMode>("otp");
   const [login, setLogin] = useState<LoginState>(defaultLogin);
-  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -86,29 +209,25 @@ export function App() {
 
   const formError = useMemo(() => {
     if (!login.email.trim()) {
-      return "Email is required.";
+      return "";
     }
 
     if (!login.email.includes("@")) {
-      return "Enter a valid email for this first login flow.";
-    }
-
-    if (mode === "password" && login.password.length < 8) {
-      return "Password must be at least 8 characters.";
-    }
-
-    if (mode === "otp" && login.otp && login.otp.length !== 6) {
-      return "OTP should be 6 digits.";
+      return "Enter a valid email to continue.";
     }
 
     return "";
-  }, [login.email, login.otp, login.password, mode]);
+  }, [login.email]);
 
-  const canSubmit = formError === "";
+  const canSubmit = login.email.trim() !== "" && formError === "";
 
   function updateLogin(field: keyof LoginState, value: string) {
-    setSubmitted(false);
     setLogin((current) => ({ ...current, [field]: value }));
+  }
+
+  function enterDashboard() {
+    setIsSignInOpen(false);
+    setScreen("dashboard");
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -116,7 +235,11 @@ export function App() {
     if (!canSubmit) {
       return;
     }
-    setSubmitted(true);
+    enterDashboard();
+  }
+
+  if (screen === "dashboard") {
+    return <Dashboard onBackToLanding={() => setScreen("landing")} />;
   }
 
   return (
@@ -135,11 +258,9 @@ export function App() {
           canSubmit={canSubmit}
           formError={formError}
           login={login}
-          mode={mode}
-          setMode={setMode}
-          submitted={submitted}
           updateLogin={updateLogin}
           handleSubmit={handleSubmit}
+          onAuthenticated={enterDashboard}
           onClose={() => setIsSignInOpen(false)}
         />
       ) : null}
@@ -286,15 +407,301 @@ function SiteFooter() {
   );
 }
 
+function Dashboard({ onBackToLanding }: { onBackToLanding: () => void }) {
+  return (
+    <main className="dashboard-shell">
+      <aside className="dashboard-sidebar" aria-label="VitalTrace app navigation">
+        <div className="dashboard-brand">
+          <div className="dashboard-logo" aria-hidden="true">
+            VT
+          </div>
+          <span>VitalTrace</span>
+        </div>
+
+        <nav className="dashboard-nav" aria-label="Dashboard navigation">
+          {dashboardNav.map((item) => (
+            <button className={item.active ? "active" : ""} type="button" key={item.label}>
+              <span aria-hidden="true">{item.token}</span>
+              <strong>{item.label}</strong>
+              {item.badge ? <em>{item.badge}</em> : null}
+            </button>
+          ))}
+        </nav>
+
+        <div className="upgrade-panel">
+          <strong>Source-linked intelligence</strong>
+          <p>Compare retests only after values are reviewed and confirmed.</p>
+          <button type="button">View proof loop</button>
+        </div>
+
+        <div className="dashboard-user">
+          <span aria-hidden="true">A</span>
+          <div>
+            <strong>Arjun Mehta</strong>
+            <small>Self profile</small>
+          </div>
+        </div>
+      </aside>
+
+      <section className="dashboard-main">
+        <DashboardTopbar onBackToLanding={onBackToLanding} />
+        <div className="dashboard-layout">
+          <section className="dashboard-content" aria-label="Health dashboard">
+            <ReviewBanner />
+            <StatusSnapshot />
+            <TrendSection />
+            <ChangeSection />
+          </section>
+          <DashboardRail />
+        </div>
+        <footer className="dashboard-footnote">
+          <span>Data is encrypted locally in this mock. Production reports remain draft until review.</span>
+          <button type="button">Privacy boundary</button>
+        </footer>
+      </section>
+    </main>
+  );
+}
+
+function DashboardTopbar({ onBackToLanding }: { onBackToLanding: () => void }) {
+  return (
+    <header className="dashboard-topbar">
+      <div>
+        <p>Good evening, Arjun</p>
+        <span>Here is your review-gated bloodwork workspace.</span>
+      </div>
+
+      <div className="profile-switcher" aria-label="Profile switcher">
+        <button className="selected" type="button">
+          <span>A</span>
+          Self
+        </button>
+        <button type="button">
+          <span>M</span>
+          Mom
+        </button>
+        <button type="button">
+          <span>D</span>
+          Dad
+        </button>
+        <button type="button" aria-label="Add profile">
+          +
+        </button>
+      </div>
+
+      <div className="dashboard-actions">
+        <button className="upload-button" type="button">
+          Upload Report
+        </button>
+        <button className="utility-button" type="button" aria-label="Notifications">
+          N
+        </button>
+        <button className="utility-button" type="button" aria-label="Help">
+          ?
+        </button>
+        <button className="utility-button" type="button" onClick={onBackToLanding}>
+          Exit
+        </button>
+      </div>
+    </header>
+  );
+}
+
+function ReviewBanner() {
+  return (
+    <section className="review-banner" aria-label="Report ready for review">
+      <div className="report-icon" aria-hidden="true">
+        <span />
+      </div>
+      <div>
+        <h1>Your report is ready for review</h1>
+        <p>65 draft observations from a 16-page PDF need confirmation before updating the timeline.</p>
+      </div>
+      <div className="report-meta">
+        <span>12 May 2026</span>
+        <span>Demo Diagnostics</span>
+      </div>
+      <div className="banner-actions">
+        <button className="primary-dashboard-action" type="button">
+          Review evidence
+        </button>
+        <button className="ghost-dashboard-action" type="button">
+          More
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function StatusSnapshot() {
+  return (
+    <section className="dashboard-panel" aria-labelledby="status-title">
+      <div className="panel-heading">
+        <div>
+          <h2 id="status-title">Current status snapshot</h2>
+          <p>Draft lab-range view, separated from official timeline status.</p>
+        </div>
+        <span>65 draft biomarkers</span>
+      </div>
+
+      <div className="status-grid">
+        <div className="status-ring-card">
+          <div className="status-ring" aria-label="65 total biomarkers">
+            <strong>65</strong>
+            <span>Total</span>
+          </div>
+        </div>
+        {statusCards.map((card) => (
+          <article className={`status-card ${card.tone}`} key={card.label}>
+            <span>{card.value}</span>
+            <strong>{card.label}</strong>
+            <small>{card.helper}</small>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function TrendSection() {
+  return (
+    <section className="dashboard-panel" aria-labelledby="trends-title">
+      <div className="panel-heading">
+        <div>
+          <h2 id="trends-title">Key biomarker trends</h2>
+          <p>Demo values use confirmed history plus the current draft report.</p>
+        </div>
+        <button type="button">View all</button>
+      </div>
+
+      <div className="trend-grid">
+        {trendCards.map((card) => (
+          <article className={`trend-card ${card.tone}`} key={card.label}>
+            <div>
+              <span>
+                {card.label} <small>({card.unit})</small>
+              </span>
+              <em>{card.status}</em>
+            </div>
+            <strong>{card.value}</strong>
+            <TrendSparkline points={card.points} tone={card.tone} />
+            <footer>
+              <span>{card.previous}</span>
+              <span>{card.latest}</span>
+            </footer>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function TrendSparkline({ points, tone }: { points: string; tone: Tone }) {
+  const lastPoint = points.split(" ").slice(-1)[0] ?? "108,34";
+  const lastY = lastPoint.split(",")[1] ?? "34";
+
+  return (
+    <svg className={`sparkline ${tone}`} viewBox="0 0 116 68" role="img" aria-label="Trend line">
+      <polyline points={points} />
+      <circle cx="108" cy={lastY} r="3" />
+    </svg>
+  );
+}
+
+function ChangeSection() {
+  return (
+    <section className="dashboard-panel" aria-labelledby="changes-title">
+      <div className="panel-heading">
+        <div>
+          <h2 id="changes-title">What changed since last report?</h2>
+          <p>Changes stay non-diagnostic until review and clinician discussion where needed.</p>
+        </div>
+        <button type="button">View all</button>
+      </div>
+
+      <div className="change-list">
+        {changeRows.map((row) => (
+          <article className={`change-row ${row.tone}`} key={row.marker}>
+            <span aria-hidden="true">{row.direction === "up" ? "UP" : row.direction === "down" ? "DN" : "OK"}</span>
+            <div>
+              <strong>{row.marker}</strong>
+              <em>{row.status}</em>
+            </div>
+            <p>{row.detail}</p>
+            <small>{row.range}</small>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function DashboardRail() {
+  return (
+    <aside className="dashboard-rail" aria-label="Report and quick actions">
+      <section className="rail-panel">
+        <div className="panel-heading">
+          <h2>Latest report</h2>
+          <button type="button">View all</button>
+        </div>
+        <div className="latest-report-row">
+          <div className="pdf-chip" aria-hidden="true">
+            PDF
+          </div>
+          <div>
+            <strong>Demo Diagnostics Ltd.</strong>
+            <span>12 May 2026 · 9:42 AM</span>
+          </div>
+          <em>Needs review</em>
+        </div>
+        <div className="report-mini-stats">
+          <div>
+            <strong>65</strong>
+            <span>Draft rows</span>
+          </div>
+          <div>
+            <strong>4</strong>
+            <span>Review flags</span>
+          </div>
+          <div>
+            <strong>0</strong>
+            <span>Auto official</span>
+          </div>
+        </div>
+        <button className="wide-rail-button" type="button">
+          View report details
+        </button>
+      </section>
+
+      <section className="rail-panel">
+        <h2>Quick actions</h2>
+        <div className="quick-action-list">
+          {quickActions.map((action) => (
+            <button type="button" key={action.title}>
+              <span aria-hidden="true">{action.token}</span>
+              <strong>{action.title}</strong>
+              <small>{action.copy}</small>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="rail-panel insight-panel">
+        <h2>Need help understanding results?</h2>
+        <p>Educational summaries appear after values are reviewed. VitalTrace does not diagnose.</p>
+        <button type="button">Explore safe insights</button>
+      </section>
+    </aside>
+  );
+}
+
 type SignInModalProps = {
   canSubmit: boolean;
   formError: string;
   login: LoginState;
-  mode: LoginMode;
-  setMode: (mode: LoginMode) => void;
-  submitted: boolean;
   updateLogin: (field: keyof LoginState, value: string) => void;
   handleSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onAuthenticated: () => void;
   onClose: () => void;
 };
 
@@ -302,11 +709,9 @@ function SignInModal({
   canSubmit,
   formError,
   login,
-  mode,
-  setMode,
-  submitted,
   updateLogin,
   handleSubmit,
+  onAuthenticated,
   onClose,
 }: SignInModalProps) {
   return (
@@ -327,45 +732,9 @@ function SignInModal({
         </div>
         <h2 id="signin-title">Sign in to VitalTrace</h2>
         <p className="terms-copy">
-          Sign in to continue. VitalTrace is a non-diagnostic tracking product; report values must
-          be reviewed before they become official.
+          Access private bloodwork timelines. Report values stay draft until you review and confirm
+          the source evidence.
         </p>
-
-        <div className="social-actions" aria-label="Mock social sign in options">
-          <button type="button">
-            <span className="provider-mark">A</span>
-            Continue with Apple
-          </button>
-          <button type="button">
-            <span className="provider-mark google">G</span>
-            Continue with Google
-          </button>
-        </div>
-
-        <div className="modal-divider">
-          <span>Email sign in</span>
-        </div>
-
-        <div className="mode-control" role="tablist" aria-label="Login method">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === "otp"}
-            className={mode === "otp" ? "active" : ""}
-            onClick={() => setMode("otp")}
-          >
-            Email OTP
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === "password"}
-            className={mode === "password" ? "active" : ""}
-            onClick={() => setMode("password")}
-          >
-            Password
-          </button>
-        </div>
 
         <form className="login-form" onSubmit={handleSubmit} noValidate>
           <label className="field">
@@ -379,53 +748,41 @@ function SignInModal({
             />
           </label>
 
-          {mode === "otp" ? (
-            <label className="field">
-              <span>One-time code</span>
-              <input
-                type="text"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                value={login.otp}
-                onChange={(event) => updateLogin("otp", event.target.value.replace(/\D/g, "").slice(0, 6))}
-                placeholder="Enter 6-digit code"
-              />
-              <small>Leave blank to request a new code.</small>
-            </label>
-          ) : (
-            <label className="field">
-              <span>Password</span>
-              <input
-                type="password"
-                autoComplete="current-password"
-                value={login.password}
-                onChange={(event) => updateLogin("password", event.target.value)}
-                placeholder="At least 8 characters"
-              />
-            </label>
-          )}
-
           {formError ? <p className="form-error">{formError}</p> : null}
 
           <button className="primary-action" type="submit" disabled={!canSubmit}>
-            {mode === "otp" && !login.otp ? "Send code" : "Continue"}
+            Continue with email
           </button>
-
-          {submitted ? (
-            <div className="success-box" role="status">
-              <strong>{mode === "otp" && !login.otp ? "Code request ready" : "Login accepted"}</strong>
-              <span>Next step: onboarding and first report review.</span>
-            </div>
-          ) : null}
         </form>
 
-        <div className="privacy-card modal-privacy">
-          <h3>Privacy boundary</h3>
-          <ul>
-            {privacyNotes.map((note) => (
-              <li key={note}>{note}</li>
+        <div className="modal-divider">
+          <span>Or continue with</span>
+        </div>
+
+        <div className="social-actions" aria-label="Mock social sign in options">
+          <button type="button" onClick={onAuthenticated}>
+            <span className="provider-mark google">G</span>
+            Google
+          </button>
+          <button type="button" onClick={onAuthenticated}>
+            <span className="provider-mark">A</span>
+            Apple
+          </button>
+        </div>
+
+        <div className="signin-path" aria-label="After sign in">
+          <span>After sign in</span>
+          <ol>
+            {onboardingSteps.map((step) => (
+              <li key={step}>{step}</li>
             ))}
-          </ul>
+          </ol>
+        </div>
+
+        <div className="modal-boundary">
+          {privacyNotes.map((note) => (
+            <span key={note}>{note}</span>
+          ))}
         </div>
       </section>
     </div>

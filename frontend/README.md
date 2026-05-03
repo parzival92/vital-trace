@@ -19,7 +19,8 @@ The app uses Vite and serves at the URL printed by the dev server.
 
 - Login screen for serious self-directed health trackers.
 - Healthline-inspired landing page adapted to VitalTrace's serious product thesis.
-- Email OTP and password mode UI.
+- Email-first sign-in modal with secondary social options.
+- Authenticated dashboard mock with review center, biomarker snapshot, trend cards, and report-change rows.
 - Client-side validation.
 - Trust and privacy boundary copy.
 - No production auth API integration yet.
